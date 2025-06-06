@@ -1,8 +1,8 @@
 -- Disable annoying temp files
-vim.o.swapfile = false         -- No .swp files
-vim.o.backup = false           -- No backup files
-vim.o.writebackup = false      -- No write backups
-vim.o.undofile = false         -- No persistent undo history
+vim.o.swapfile = false
+vim.o.backup = false
+vim.o.writebackup = false
+vim.o.undofile = false
 
 -- Basic UI Settings
 vim.opt.number = true
@@ -11,15 +11,18 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.smartindent = true
-vim.opt.termguicolors = true    -- Enable true color support
-vim.o.mouse = "a"              -- Enable mouse support
+vim.opt.termguicolors = true
+vim.o.mouse = "a"
+
+-- Set leader key
+vim.g.mapleader = " "
 
 -- lazy.nvim setup
 local lazypath = vim.fn.stdpath("config") .. "/lazy/lazy.nvim"
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    -- Colorscheme: TokyoNight
+    -- Colorscheme
     {
         "folke/tokyonight.nvim",
         priority = 1000,
@@ -27,50 +30,69 @@ require("lazy").setup({
             vim.cmd("colorscheme tokyonight-night")
         end,
     },
+
     -- Core dependencies
     "nvim-lua/plenary.nvim",
-    -- Telescope fuzzy finder
+
+    -- Fuzzy finder
     "nvim-telescope/telescope.nvim",
+
     -- File explorer
     "nvim-tree/nvim-tree.lua",
     "nvim-tree/nvim-web-devicons",
-    -- Status bar
+
+    -- Status line
     "nvim-lualine/lualine.nvim",
-    -- LSP and completion
+
+    -- LSP and autocompletion
     "neovim/nvim-lspconfig",
     "hrsh7th/nvim-cmp",
     "hrsh7th/cmp-nvim-lsp",
     "L3MON4D3/LuaSnip",
     "saadparwaiz1/cmp_luasnip",
-    -- Syntax highlighting
+
+    -- Treesitter
     { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+
+    -- OSC52 clipboard support
+    {
+        "ojroques/nvim-osc52",
+        config = function()
+            require("osc52").setup()
+            local function copy()
+                if vim.v.event.operator == "y" and vim.v.event.regname == "" then
+                    require("osc52").copy_register("")
+                end
+            end
+            vim.api.nvim_create_autocmd("TextYankPost", { callback = copy })
+        end,
+    },
 })
 
 -- Keymaps
-vim.g.mapleader = " " -- Set <leader> to Space
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = true })
 
--- File Explorer
+-- File Explorer config
 require("nvim-tree").setup()
 
--- Status Bar
+-- Status Line
 require("lualine").setup {
     options = { theme = "auto" }
 }
 
--- Treesitter Syntax Highlight
+-- Treesitter
 require("nvim-treesitter.configs").setup {
     highlight = { enable = true },
     indent = { enable = true },
     ensure_installed = { "lua", "python", "cpp", "bash", "json" },
 }
 
--- LSP (Python Example)
+-- LSP config (Python example)
 require("lspconfig").pyright.setup {}
 
--- Autocompletion Setup
+-- Completion
 local cmp = require("cmp")
 local luasnip = require("luasnip")
 
@@ -90,4 +112,3 @@ cmp.setup({
         { name = "luasnip" },
     }),
 })
-
