@@ -54,6 +54,20 @@ require("lazy").setup({
     -- Treesitter
     { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 
+    -- CSV formatting plugin
+    {
+        "chrisbra/csv.vim",
+        ft = "csv",
+        config = function()
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = "csv",
+                callback = function()
+                    vim.cmd("Columnize")
+                end,
+            })
+        end,
+    },
+
     -- OSC52 clipboard support
     {
         "ojroques/nvim-osc52",
