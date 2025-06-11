@@ -17,8 +17,19 @@ vim.o.mouse = "a"
 -- Set leader key
 vim.g.mapleader = " "
 
+-- Clipboard: make plain y yank to system clipboard
+vim.opt.clipboard = "unnamedplus"
+
 -- lazy.nvim setup
 local lazypath = vim.fn.stdpath("config") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  -- bootstrap lazy.nvim if missing
+  vim.fn.system({
+    "git", "clone", "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", lazypath,
+  })
+end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
@@ -68,7 +79,7 @@ require("lazy").setup({
         end,
     },
 
-    -- OSC52 clipboard support
+    -- OSC52 clipboard support (optional; can keep or remove)
     {
         "ojroques/nvim-osc52",
         config = function()
