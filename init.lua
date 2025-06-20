@@ -61,6 +61,7 @@ require("lazy").setup({
     config = function()
       require("bufferline").setup({
         options = {
+          numbers = "ordinal", -- <== 🆕 This shows buffer numbers like 1, 2, 3
           diagnostics             = "nvim_lsp",
           show_buffer_close_icons = false,
           show_close_icon         = false,
