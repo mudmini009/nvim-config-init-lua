@@ -1,29 +1,28 @@
 -- Disable annoying temp files
-vim.o.swapfile = false
-vim.o.backup = false
-vim.o.writebackup = false
-vim.o.undofile = false
+vim.o.swapfile     = false
+vim.o.backup       = false
+vim.o.writebackup  = false
+vim.o.undofile     = false
 
 -- Basic UI Settings
-vim.opt.number = true
+vim.opt.number         = true
 vim.opt.relativenumber = true
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.smartindent = true
-vim.opt.termguicolors = true
-vim.o.mouse = "a"
+vim.opt.tabstop        = 4
+vim.opt.shiftwidth     = 4
+vim.opt.expandtab      = true
+vim.opt.smartindent    = true
+vim.opt.termguicolors  = true
+vim.o.mouse            = "a"
 
 -- Set leader key
 vim.g.mapleader = " "
 
--- Clipboard: make plain y yank to system clipboard
+-- Clipboard: make y/yank use system clipboard
 vim.opt.clipboard = "unnamedplus"
 
--- lazy.nvim setup
+-- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("config") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  -- bootstrap lazy.nvim if missing
   vim.fn.system({
     "git", "clone", "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
@@ -33,107 +32,110 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    -- Colorscheme
-    {
-        "folke/tokyonight.nvim",
+  -- 1) Colorscheme: 
+  {
+         "folke/tokyonight.nvim",
         priority = 1000,
         config = function()
             vim.cmd("colorscheme tokyonight-night")
-        end,
-    },
+        end, },
 
-    -- Core dependencies
-    "nvim-lua/plenary.nvim",
+  -- 2) Core dependencies
+  "nvim-lua/plenary.nvim",
 
-    -- Fuzzy finder
-    "nvim-telescope/telescope.nvim",
+  -- 3) Fuzzy finder
+  "nvim-telescope/telescope.nvim",
 
-    -- File explorer
-    "nvim-tree/nvim-tree.lua",
-    "nvim-tree/nvim-web-devicons",
+  -- 4) File explorer + icons
+  "nvim-tree/nvim-tree.lua",
+  "nvim-tree/nvim-web-devicons",
 
-    -- Status line
-    "nvim-lualine/lualine.nvim",
+  -- 5) Status line
+  "nvim-lualine/lualine.nvim",
 
-    -- LSP and autocompletion
-    "neovim/nvim-lspconfig",
-    "hrsh7th/nvim-cmp",
-    "hrsh7th/cmp-nvim-lsp",
-    "L3MON4D3/LuaSnip",
-    "saadparwaiz1/cmp_luasnip",
+  -- 6) Buffer tabs
+  {
+    "akinsho/bufferline.nvim",
+    version      = "*",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require("bufferline").setup({
+        options = {
+          diagnostics             = "nvim_lsp",
+          show_buffer_close_icons = false,
+          show_close_icon         = false,
+          separator_style         = "slant",
+          offsets = {
+            {
+              filetype   = "NvimTree",
+              text       = "Explorer",
+              highlight  = "Directory",
+              text_align = "left",
+            },
+          },
+        },
+      })
+    end,
+  },
 
-    -- Treesitter
-    { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+  -- 7) CSV alignment & highlighting
+  {
+    "cameron-wags/rainbow_csv.nvim",
+    ft = { "csv", "tsv" },
+    config = function()
+      vim.keymap.set("n", "<leader>ra", ":RainbowAlign<CR>",
+        { noremap = true, silent = true, desc = "Align CSV columns" })
+    end,
+  },
 
-    -- CSV formatting plugin
-    {
-        "chrisbra/csv.vim",
-        ft = "csv",
-        config = function()
-            vim.api.nvim_create_autocmd("FileType", {
-                pattern = "csv",
-                callback = function()
-                    vim.cmd("Columnize")
-                end,
-            })
-        end,
-    },
+  -- 8) LSP + completion
+  "neovim/nvim-lspconfig",
+  "hrsh7th/nvim-cmp",
+  "hrsh7th/cmp-nvim-lsp",
+  "L3MON4D3/LuaSnip",
+  "saadparwaiz1/cmp_luasnip",
 
-    -- OSC52 clipboard support (optional; can keep or remove)
-    {
-        "ojroques/nvim-osc52",
-        config = function()
-            require("osc52").setup()
-            local function copy()
-                if vim.v.event.operator == "y" and vim.v.event.regname == "" then
-                    require("osc52").copy_register("")
-                end
-            end
-            vim.api.nvim_create_autocmd("TextYankPost", { callback = copy })
-        end,
-    },
+  -- 9) Treesitter
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 })
 
 -- Keymaps
-vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>e",  ":NvimTreeToggle<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>",   { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>",    { noremap = true, silent = true })
 
--- File Explorer config
+-- Plugin configs that need to be loaded after setup:
+-- Nvim Tree
 require("nvim-tree").setup()
 
--- Status Line
-require("lualine").setup {
-    options = { theme = "auto" }
-}
+-- Lualine
+require("lualine").setup { options = { theme = "auto" } }
 
--- Treesitter
+-- Treesitter configs
 require("nvim-treesitter.configs").setup {
-    highlight = { enable = true },
-    indent = { enable = true },
-    ensure_installed = { "lua", "python", "cpp", "bash", "json" },
+  highlight = { enable = true },
+  indent    = { enable = true },
+  ensure_installed = { "lua", "python", "cpp", "bash", "json" },
 }
 
--- LSP config (Python example)
+-- LSP (example: Pyright)
 require("lspconfig").pyright.setup {}
 
--- Completion
-local cmp = require("cmp")
+-- Completion setup
+local cmp     = require("cmp")
 local luasnip = require("luasnip")
 
 cmp.setup({
-    snippet = {
-        expand = function(args)
-            luasnip.lsp_expand(args.body)
-        end,
-    },
-    mapping = cmp.mapping.preset.insert({
-        ["<Tab>"] = cmp.mapping.select_next_item(),
-        ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-        ["<CR>"] = cmp.mapping.confirm({ select = true }),
-    }),
-    sources = cmp.config.sources({
-        { name = "nvim_lsp" },
-        { name = "luasnip" },
-    }),
+  snippet = {
+    expand = function(args) luasnip.lsp_expand(args.body) end,
+  },
+  mapping = cmp.mapping.preset.insert({
+    ["<Tab>"]    = cmp.mapping.select_next_item(),
+    ["<S-Tab>"]  = cmp.mapping.select_prev_item(),
+    ["<CR>"]     = cmp.mapping.confirm({ select = true }),
+  }),
+  sources = cmp.config.sources({
+    { name = "nvim_lsp" },
+    { name = "luasnip"  },
+  }),
 })
