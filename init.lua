@@ -20,6 +20,27 @@ vim.g.mapleader = " "
 -- Clipboard: make y/yank use system clipboard
 vim.opt.clipboard = "unnamedplus"
 
+-- Gemini AI: Auto-reload files when they change on disk
+-- This section makes Neovim automatically reload files if they are
+-- changed by an external program. This is useful when you are running
+-- a code generator, switching git branches, or using other tools that
+-- modify files in the background.
+vim.o.autoread = true -- Enable the basic autoread functionality.
+vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGained" }, {
+  group = vim.api.nvim_create_augroup("auto_reload_on_change", { clear = true }),
+  pattern = "*",
+  callback = function()
+    -- This command checks the timestamp of the file on disk. If it's
+    -- more recent than the buffer's timestamp, Neovim will reload it.
+    -- We only run this in normal mode to avoid interruptions.
+    if vim.fn.mode() == "n" then
+      vim.cmd("checktime")
+    end
+  end,
+  desc = "Automatically reload files when they change on disk.",
+})
+
+
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("config") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -32,7 +53,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-  -- 1) Colorscheme: 
+  -- 1) Colorscheme:
   {
          "folke/tokyonight.nvim",
         priority = 1000,
