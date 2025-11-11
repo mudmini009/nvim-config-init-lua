@@ -193,7 +193,7 @@ require("nvim-treesitter.configs").setup {
 -- This will now automatically set up ALL servers you install with Mason
 -- (including pyright and csharp_ls)
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "csharp_ls" },
+  ensure_installed = { "pyright", "omnisharp" },
   handlers = {
     -- This is the default handler, it just starts the server
     function(server_name)
